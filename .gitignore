@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.env
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Данные и логи
+*.log
+data/
+cache/
+*.csv
+*.json
+
+# Tinkoff
+config.py
+secrets/
+*.key
