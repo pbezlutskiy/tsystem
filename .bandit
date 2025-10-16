@@ -1,0 +1,5 @@
+[bandit]
+exclude: .git,.vscode,__pycache__,venv
+target: .
+output: bandit_report.json
+format: json
