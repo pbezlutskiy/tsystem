@@ -8,95 +8,52 @@ TOKEN = "t.8HbNCn4L0U9uBmMa5oloBrXCKxnqsTYNVK3f9iJOwDBiQ2lva9kvQ3C-MLgEESHl65ma1
 def main():
     service = InstrumentService(token=TOKEN)
     
-    print("🚀 Улучшенное тестирование сервиса инструментов...")
+    print("🚀 Тестирование сервиса инструментов...")
     
     # Тест 1: Получение акций
     print("\n1. 📊 Получение списка российских акций...")
     try:
         shares_df = service.shares_to_dataframe()
         print(f"✅ Успешно получено {len(shares_df)} российских акций")
-        
-        # Покажем известные акции
-        known_tickers = ['SBER', 'GAZP', 'LKOH', 'ROSN', 'YNDX', 'VTBR', 'TATN', 'GMKN', 'PLZL', 'NLMK']
-        known_shares = shares_df[shares_df['Ticker'].isin(known_tickers)]
-        print("\n📈 Известные российские акции:")
-        for _, share in known_shares.iterrows():
-            print(f"   - {share['Ticker']}: {share['Name']}")
-            
+        if len(shares_df) > 0:
+            print("Первые 10 российских акций:")
+            print(shares_df[['Ticker', 'Name', 'Exchange']].head(10))
     except Exception as e:
         print(f"❌ Ошибка: {e}")
     
-    # Тест 2: Улучшенный поиск инструментов
-    print("\n2. 🔍 Улучшенный поиск инструментов...")
+    # Тест 2: Поиск инструментов (упрощенный)
+    print("\n2. 🔍 Поиск российских инструментов...")
     try:
-        search_queries = ['SBER', 'GAZP', 'LKOH', 'YNDX']
+        search_queries = ['Сбер', 'Газпром', 'Лукойл', 'Норникель']
         for query in search_queries:
             print(f"\nПоиск '{query}':")
             instruments = service.find_instrument(query)
-            
-            if instruments:
-                print(f"   Найдено инструментов: {len(instruments)}")
-                for instr in instruments[:3]:  # Покажем первые 3
-                    instrument_type = getattr(instr, 'instrument_type', 'Unknown')
-                    currency = getattr(instr, 'currency', 'Unknown')
-                    print(f"   - {instr.ticker}: {instr.name} ({instrument_type}, {currency})")
-            else:
-                print("   Инструменты не найдены")
-                
+            russian_instruments = [i for i in instruments if hasattr(i, 'country_of_risk') and i.country_of_risk == 'RU']
+            print(f"   Найдено российских инструментов: {len(russian_instruments)}")
+            for instr in russian_instruments[:3]:
+                print(f"   - {instr.ticker}: {instr.name}")
     except Exception as e:
         print(f"❌ Ошибка: {e}")
     
-    # Тест 3: Получение облигаций
-    print("\n3. 📊 Получение облигаций...")
+    # Тест 3: Получение ETF
+    print("\n3. 📊 Получение ETF...")
     try:
-        bonds = service.get_all_bonds()
-        russian_bonds = [bond for bond in bonds if bond.currency == 'rub']
-        print(f"✅ Найдено {len(russian_bonds)} российских облигаций")
-        
-        # Покажем первые 5
-        for bond in russian_bonds[:5]:
-            print(f"   - {bond.ticker}: {bond.name}")
-            
+        etfs = service.get_all_etfs()
+        russian_etfs = [etf for etf in etfs if etf.currency == 'rub']
+        print(f"✅ Найдено {len(russian_etfs)} российских ETF")
+        for etf in russian_etfs[:5]:
+            print(f"   - {etf.ticker}: {etf.name}")
     except Exception as e:
         print(f"❌ Ошибка: {e}")
     
-    # Тест 4: Поиск по FIGI
-    print("\n4. 🔎 Поиск по FIGI...")
+    # Тест 4: Получение информации по конкретному инструменту
+    print("\n4. 🔎 Информация по Сбербанку...")
     try:
-        # Популярные FIGI
-        figi_dict = {
-            'SBER': 'BBG004730N88',
-            'GAZP': 'BBG004730RP0', 
-            'LKOH': 'BBG004731032',
-            'YNDX': 'BBG006L8G4H1'
-        }
-        
-        for ticker, figi in figi_dict.items():
-            instrument = service.get_instrument_by_figi(figi)
-            if instrument and hasattr(instrument, 'instrument'):
-                instr = instrument.instrument
-                print(f"✅ {ticker}: {instr.name}")
-                print(f"   FIGI: {instr.figi}")
-                print(f"   Тикер: {instr.ticker}")
-                print(f"   Валюта: {instr.currency}")
-                print(f"   Лот: {instr.lot}")
-                print(f"   Минимальный шаг: {instr.min_price_increment.units}.{instr.min_price_increment.nano:09d}")
-                print()
-                
-    except Exception as e:
-        print(f"❌ Ошибка: {e}")
-    
-    # Тест 5: Получение валют
-    print("\n5. 💰 Получение валют...")
-    try:
-        currencies = service.get_all_currencies()
-        print(f"✅ Найдено {len(currencies)} валют")
-        
-        # Покажем основные валюты
-        main_currencies = [c for c in currencies if c.ticker in ['USD', 'EUR', 'CNY', 'GBP']]
-        for currency in main_currencies:
-            print(f"   - {currency.ticker}: {currency.name}")
-            
+        instrument = service.get_instrument_by_figi('BBG004730N88')
+        print(f"✅ {instrument.instrument.ticker}: {instrument.instrument.name}")
+        print(f"   Лот: {instrument.instrument.lot}")
+        print(f"   Валюта: {instrument.instrument.currency}")
+        print(f"   Минимальный шаг цены: {instrument.instrument.min_price_increment.units}.{instrument.instrument.min_price_increment.nano:09d}")
     except Exception as e:
         print(f"❌ Ошибка: {e}")
 

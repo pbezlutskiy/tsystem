@@ -246,32 +246,99 @@ class InstrumentService:
     
     # Методы для конвертации в DataFrame
     def shares_to_dataframe(self, filter_russian=True):
-        """
-        Конвертация списка акций в DataFrame
-        
-        Args:
-            filter_russian (bool): Фильтровать только российские акции
-            
-        Returns:
-            pd.DataFrame: DataFrame с акциями
-        """
+        """Конвертация списка акций в DataFrame"""
         try:
             shares = self.get_all_shares()
             data = []
             
             for share in shares:
-                if filter_russian:
-                    # Фильтруем только российские акции
-                    if share.currency == 'rub' and getattr(share, 'country_of_risk', '') == 'RU':
+                try:
+                    # Безопасная проверка атрибутов
+                    currency = getattr(share, 'currency', '')
+                    country = getattr(share, 'country_of_risk', '')
+                    
+                    if filter_russian:
+                        # Фильтруем только российские акции
+                        if currency == 'rub' and country == 'RU':
+                            data.append(self._share_to_dict(share))
+                    else:
                         data.append(self._share_to_dict(share))
-                else:
-                    data.append(self._share_to_dict(share))
+                        
+                except Exception as e:
+                    print(f"⚠️ Ошибка обработки акции {getattr(share, 'ticker', 'Unknown')}: {e}")
+                    continue
             
             return pd.DataFrame(data)
+            
         except Exception as e:
-            print(f"Ошибка при получении акций: {e}")
+            print(f"❌ Ошибка при получении акций: {e}")
             return pd.DataFrame()
-    
+
+    def shares_to_dataframe_safe(self, filter_russian=True):
+        """Безопасная версия получения акций"""
+        try:
+            with self._get_client() as client:
+                # Пробуем разные статусы инструментов
+                instrument_statuses = [
+                    InstrumentStatus.INSTRUMENT_STATUS_BASE,
+                    InstrumentStatus.INSTRUMENT_STATUS_ALL
+                ]
+                
+                all_shares = []
+                for status in instrument_statuses:
+                    try:
+                        shares = client.instruments.shares(instrument_status=status).instruments
+                        all_shares.extend(shares)
+                    except Exception as e:
+                        print(f"⚠️ Ошибка при статусе {status}: {e}")
+                        continue
+                
+                data = []
+                for share in all_shares:
+                    try:
+                        # Безопасное получение атрибутов
+                        ticker = getattr(share, 'ticker', '')
+                        name = getattr(share, 'name', '')
+                        currency = getattr(share, 'currency', '')
+                        country = getattr(share, 'country_of_risk', '')
+                        
+                        if not ticker:  # Пропускаем инструменты без тикера
+                            continue
+                            
+                        if filter_russian:
+                            if currency == 'rub' and country == 'RU':
+                                data.append({
+                                    'FIGI': getattr(share, 'figi', ''),
+                                    'Ticker': ticker,
+                                    'Name': name,
+                                    'Currency': currency,
+                                    'Lot': getattr(share, 'lot', 1),
+                                    'Exchange': getattr(share, 'exchange', ''),
+                                    'Sector': getattr(share, 'sector', ''),
+                                    'Country': country,
+                                })
+                        else:
+                            data.append({
+                                'FIGI': getattr(share, 'figi', ''),
+                                'Ticker': ticker,
+                                'Name': name,
+                                'Currency': currency,
+                                'Lot': getattr(share, 'lot', 1),
+                                'Exchange': getattr(share, 'exchange', ''),
+                                'Sector': getattr(share, 'sector', ''),
+                                'Country': country,
+                            })
+                            
+                    except Exception as e:
+                        print(f"⚠️ Ошибка обработки акции {ticker}: {e}")
+                        continue
+                
+                return pd.DataFrame(data)
+                
+        except Exception as e:
+            print(f"❌ Критическая ошибка при получении акций: {e}")
+            return pd.DataFrame()  
+
     def etfs_to_dataframe(self, filter_russian=True):
         """
         Конвертация списка ETF в DataFrame
