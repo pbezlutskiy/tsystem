@@ -25,7 +25,6 @@ from gui.tabs import (
 
 from gui.components import FileBrowser, ResultsComboBox, StyledButton
 
-<<<<<<< HEAD
 # ✅ ДОБАВЬТЕ ПОСЛЕ СУЩЕСТВУЮЩИХ ИМПОРТОВ:
 try:
     from gui.tabs.instruments_tab_working import InstrumentsTabWorking as InstrumentsTab
@@ -34,7 +33,6 @@ try:
 except ImportError as e:
     print(f"ℹ️ Рабочая вкладка инструментов не доступна: {e}")
     INSTRUMENTS_AVAILABLE = False
-=======
 
 
 # 🔧 ПЫТАЕМСЯ ИМПОРТИРОВАТЬ МОДУЛЬ Т-БАНКА
