@@ -151,20 +151,47 @@ class InstrumentService:
         
         Args:
             ticker (str): Тикер инструмента
-            class_code (str): Класс-код инструмента
-            
+            class_code (str): Класс-код инструмента. 
+                            Для акций: 'TQBR', для ETF: 'TQTF' и т.д.
+                            Если пусто, попробуем определить автоматически.
+        
         Returns:
             object: Объект инструмента
         """
         with self._get_client() as client:
             instruments_service = client.instruments
-            instrument = instruments_service.get_instrument_by(
-                id_type=InstrumentIdType.INSTRUMENT_ID_TYPE_TICKER,
-                class_code=class_code,
-                id=ticker
-            )
-            return instrument
-    
+            
+            # Если class_code не указан, попробуем определить автоматически
+            if not class_code:
+                # Популярные класс-коды для российских инструментов
+                common_class_codes = ['TQBR', 'TQTF', 'TQTD', 'TQTE', 'TQTU', 'TQIH', 'TQOB']
+                
+                for code in common_class_codes:
+                    try:
+                        instrument = instruments_service.get_instrument_by(
+                            id_type=InstrumentIdType.INSTRUMENT_ID_TYPE_TICKER,
+                            class_code=code,
+                            id=ticker
+                        )
+                        if instrument and hasattr(instrument, 'instrument'):
+                            return instrument
+                    except Exception:
+                        continue
+                
+                # Если не нашли с автоматическим определением, используем TQBR как дефолт
+                class_code = 'TQBR'
+            
+            try:
+                instrument = instruments_service.get_instrument_by(
+                    id_type=InstrumentIdType.INSTRUMENT_ID_TYPE_TICKER,
+                    class_code=class_code,
+                    id=ticker
+                )
+                return instrument
+            except Exception as e:
+                print(f"❌ Ошибка поиска {ticker} с class_code {class_code}: {e}")
+                return None
+                
     def get_trading_schedules(self, exchange=None, from_date=None, to_date=None):
         """
         Получение расписания торгов

@@ -82,25 +82,18 @@ class InstrumentsTab(ttk.Frame):
     
     def create_shares_table(self):
         """Создание таблицы для акций"""
-        # Treeview для акций
-        columns = ('Ticker', 'Name', 'Lot', 'Currency', 'Exchange', 'Sector')
+        # Treeview для акций - добавляем FIGI как скрытую колонку
+        columns = ('FIGI', 'Ticker', 'Name', 'Lot', 'Currency', 'Exchange', 'Sector')
         self.shares_tree = ttk.Treeview(self.shares_frame, columns=columns, show='headings', height=15)
         
-        # Заголовки
+        # Заголовки (FIGI скрываем)
         for col in columns:
             self.shares_tree.heading(col, text=col)
-            self.shares_tree.column(col, width=100)
-        
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(self.shares_frame, orient=tk.VERTICAL, command=self.shares_tree.yview)
-        self.shares_tree.configure(yscrollcommand=scrollbar.set)
-        
-        self.shares_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        # Двойной клик для получения деталей
-        self.shares_tree.bind('<Double-1>', self.show_instrument_details)
-    
+            if col == 'FIGI':
+                self.shares_tree.column(col, width=0, stretch=False)  # Скрытая колонка
+            else:
+                self.shares_tree.column(col, width=100)
+                    
     def create_search_table(self):
         """Создание таблицы для результатов поиска"""
         columns = ('Ticker', 'Name', 'Instrument Type', 'Currency', 'Exchange', 'API Trade')
@@ -161,6 +154,7 @@ class InstrumentsTab(ttk.Frame):
             
             for _, row in shares_df.iterrows():
                 self.shares_tree.insert('', tk.END, values=(
+                    row['FIGI'],  # FIGI как первое значение (скрытое)
                     row['Ticker'],
                     row['Name'],
                     row['Lot'],
@@ -249,6 +243,30 @@ class InstrumentsTab(ttk.Frame):
             messagebox.showerror("Ошибка", f"Не удалось загрузить облигации: {e}")
     
     def show_instrument_details(self, event):
+        """Показать детали инструмента - используем FIGI"""
+        tree = event.widget
+        selection = tree.selection()
+        if not selection:
+            return
+        
+        item = selection[0]
+        values = tree.item(item, 'values')
+        figi = values[0]  # FIGI теперь первое значение
+        ticker = values[1]  # Тикер второе
+        
+        try:
+            # Используем FIGI для поиска - это надежнее
+            instrument = self.service.get_instrument_by_figi(figi)
+            if instrument and hasattr(instrument, 'instrument'):
+                details = instrument.instrument
+                self.show_details_window(details)
+            else:
+                messagebox.showwarning("Внимание", 
+                                    f"Не удалось найти детальную информацию для {ticker}")
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Не удалось получить детали: {e}")
+    
+    def show_instrument_details(self, event):
         """Показать детали инструмента"""
         tree = event.widget
         selection = tree.selection()
@@ -260,52 +278,18 @@ class InstrumentsTab(ttk.Frame):
         ticker = values[0]
         
         try:
+            # Используем улучшенный метод поиска
             instrument = self.service.get_instrument_by_ticker(ticker)
             if instrument and hasattr(instrument, 'instrument'):
                 details = instrument.instrument
                 self.show_details_window(details)
+            else:
+                messagebox.showwarning("Внимание", 
+                                    f"Не удалось найти детальную информацию для {ticker}\n"
+                                    f"Инструмент может быть недоступен через API")
         except Exception as e:
             messagebox.showerror("Ошибка", f"Не удалось получить детали: {e}")
-    
-    def show_details_window(self, instrument):
-        """Окно с детальной информацией об инструменте"""
-        details_window = tk.Toplevel(self)
-        details_window.title(f"Детали: {instrument.ticker}")
-        details_window.geometry("500x400")
-        
-        text_widget = tk.Text(details_window, wrap=tk.WORD, padx=10, pady=10)
-        text_widget.pack(fill=tk.BOTH, expand=True)
-        
-        # Формируем информацию
-        info = f"""📊 Детальная информация об инструменте:
-
-📛 Название: {instrument.name}
-🏷️ Тикер: {instrument.ticker}
-🔢 FIGI: {instrument.figi}
-💰 Валюта: {instrument.currency}
-📦 Лот: {instrument.lot}
-🎯 Минимальный шаг цены: {instrument.min_price_increment.units}.{instrument.min_price_increment.nano:09d}
-🏛️ Биржа: {instrument.exchange}
-📋 Класс-код: {instrument.class_code}
-
-⚙️ Доступность:
-• Торговля через API: {'✅ Да' if instrument.api_trade_available_flag else '❌ Нет'}
-• Покупка: {'✅ Да' if instrument.buy_available_flag else '❌ Нет'}
-• Продажа: {'✅ Да' if instrument.sell_available_flag else '❌ Нет'}
-
-"""
-        
-        # Добавляем специфичные поля для разных типов инструментов
-        if hasattr(instrument, 'sector'):
-            info += f"🏭 Сектор: {instrument.sector}\n"
-        if hasattr(instrument, 'country_of_risk'):
-            info += f"🌍 Страна риска: {instrument.country_of_risk}\n"
-        if hasattr(instrument, 'nominal'):
-            info += f"💎 Номинал: {instrument.nominal.units}.{instrument.nominal.nano:09d}\n"
-        
-        text_widget.insert(tk.END, info)
-        text_widget.config(state=tk.DISABLED)
-    
+                        
     def export_to_csv(self):
         """Экспорт данных в CSV"""
         try:

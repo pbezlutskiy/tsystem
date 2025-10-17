@@ -1,8 +1,7 @@
 # ===== СЕКЦИЯ 16: ГЛАВНОЕ ОКНО ПРИЛОЖЕНИЯ =====
 
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox, scrolledtext
-from typing import Optional
+from tkinter import ttk, filedialog, messagebox
 import matplotlib
 matplotlib.use('TkAgg')
 from datetime import datetime
@@ -25,17 +24,8 @@ from gui.tabs import (
 
 from gui.components import FileBrowser, ResultsComboBox, StyledButton
 
-<<<<<<< HEAD
-# ✅ ДОБАВЬТЕ ПОСЛЕ СУЩЕСТВУЮЩИХ ИМПОРТОВ:
-try:
-    from gui.tabs.instruments_tab_working import InstrumentsTabWorking as InstrumentsTab
-    INSTRUMENTS_AVAILABLE = True
-    print("✅ Рабочая вкладка инструментов загружена")
-except ImportError as e:
-    print(f"ℹ️ Рабочая вкладка инструментов не доступна: {e}")
-    INSTRUMENTS_AVAILABLE = False
-=======
-
+# 🔧 ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННОЙ ДО БЛОКА TRY
+TBANK_AVAILABLE = False
 
 # 🔧 ПЫТАЕМСЯ ИМПОРТИРОВАТЬ МОДУЛЬ Т-БАНКА
 try:
@@ -73,6 +63,8 @@ class TradingSystemGUI:
         # 🆕 ДЛЯ API ДАННЫХ
         self.current_api_data = None
         
+        # ... остальной код конструктора без изменений ...
+        
         # 🆕 НОВАЯ ПЕРЕМЕННАЯ: Включение/отключение риск-менеджмента
         self.risk_management_enabled = tk.BooleanVar(value=True)
         
@@ -92,11 +84,6 @@ class TradingSystemGUI:
         
         # Словарь для хранения вкладок
         self.tabs = {}
-        
-        # 🆕 Инициализация атрибутов для избежания ошибок Pylint
-        self.performance_stats = {}
-        self._cache_stats = {}
-        self.active_orders = {}
         
         self.setup_gui()
 
@@ -125,17 +112,6 @@ class TradingSystemGUI:
         self.notebook.add(self.tabs['compare'].get_frame(), text="Сравнение")
         self.notebook.add(self.tabs['risk'].get_frame(), text="Риски")
         self.notebook.add(self.tabs['risk_analysis'].get_frame(), text="Анализ рисков")
-        
-        # ✅ ДОБАВЛЯЕМ ВКЛАДКУ ИНСТРУМЕНТОВ
-        if INSTRUMENTS_AVAILABLE:
-            try:
-                # Используем токен из Tinkoff API
-                TOKEN = "t.8HbNCn4L0U9uBmMa5oloBrXCKxnqsTYNVK3f9iJOwDBiQ2lva9kvQ3C-MLgEESHl65ma1q0k0P6aMfS_O_co4g"
-                self.instruments_tab = InstrumentsTab(self.notebook, TOKEN)
-                self.notebook.add(self.instruments_tab, text="📊 Инструменты")
-                print("✅ Вкладка инструментов успешно добавлена")
-            except Exception as e:
-                print(f"❌ Ошибка добавления вкладки инструментов: {e}")
 
     def setup_gui(self):
         """Настройка графического интерфейса"""
@@ -206,7 +182,7 @@ class TradingSystemGUI:
         ttk.Checkbutton(parent, text="🛡️ Включить риск-менеджмент", 
                         variable=self.risk_management_enabled).grid(row=7, column=0, columnspan=2, sticky=tk.W, pady=2)
 
-        # ВЫБОР СТРАТЕГИИ
+        # ВЫБОР СТРАТЕГИИ (смещаем на 1 строку вниз)
         ttk.Label(parent, text="Стратегия:").grid(row=8, column=0, sticky=tk.W, pady=2)
         strategy_frame = ttk.Frame(parent)
         strategy_frame.grid(row=8, column=1, sticky=(tk.W, tk.E), pady=2)
@@ -218,7 +194,7 @@ class TradingSystemGUI:
         strategy_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
         strategy_combo.bind('<<ComboboxSelected>>', self.on_strategy_changed)
 
-        # Параметры Super Trend
+        # Параметры Super Trend (смещаем на 1 строку вниз)
         self.supertrend_frame = ttk.LabelFrame(parent, text="Параметры Super Trend")
         self.supertrend_frame.grid(row=9, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
 
@@ -228,7 +204,7 @@ class TradingSystemGUI:
         ttk.Label(self.supertrend_frame, text="Множитель:").grid(row=0, column=2, sticky=tk.W, padx=5)
         ttk.Entry(self.supertrend_frame, textvariable=self.supertrend_multiplier, width=8).grid(row=0, column=3, padx=5)
         
-        # 🛡️ ПАРАМЕТРЫ УПРАВЛЕНИЯ РИСКАМИ
+        # 🛡️ ПАРАМЕТРЫ УПРАВЛЕНИЯ РИСКАМИ (смещаем на 1 строку вниз)
         risk_frame = ttk.LabelFrame(parent, text="🛡️ Управление рисками", padding="5")
         risk_frame.grid(row=10, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
         
@@ -256,7 +232,7 @@ class TradingSystemGUI:
         # Изначально скрываем параметры Super Trend
         self.supertrend_frame.grid_remove()
         
-        # Кнопки управления
+        # Кнопки управления (смещаем на 1 строку вниз)
         button_frame = ttk.Frame(parent)
         button_frame.grid(row=11, column=0, columnspan=2, pady=20)
         
@@ -272,9 +248,11 @@ class TradingSystemGUI:
         StyledButton(button_frame, text="❓ Справка", 
                     command=self.show_help).pack(fill=tk.X, pady=2)
         
-        # Информация о системе
+        # Информация о системе (смещаем на 1 строку вниз)
         info_frame = ttk.LabelFrame(parent, text="ℹ️ Информация о системе", padding="10")
         info_frame.grid(row=12, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        
+        # ... остальной код info_frame без изменений ...
         
         info_text = """Система реализует принципы Эда Сейкоты:
         • Управление капиталом по формуле Келли
@@ -285,6 +263,8 @@ class TradingSystemGUI:
         
         ttk.Label(info_frame, text=info_text, justify=tk.LEFT, 
                  font=('Arial', 9)).pack(anchor=tk.W)
+        
+  
     
     def setup_right_panel(self, parent):
         """Настройка правой панели результатов"""
@@ -333,12 +313,30 @@ class TradingSystemGUI:
         self.tabs['stats'].update_stats(current_result)
         self.tabs['risk'].update_plot(current_result)
         
+        # 🆕 ОБНОВЛЯЕМ ВКЛАДКУ АНАЛИЗА РИСКОВ - ВРЕМЕННО ЗАКОММЕНТИРУЕМ
+        # if 'risk_analysis' in self.tabs:
+        #     self.tabs['risk_analysis'].update_results_list()  # Обновляем список
+        #     self.tabs['risk_analysis'].update_tab(current_result)  # Обновляем анализ
+
+        # Добавление вкладок в notebook
+        self.notebook.add(self.tabs['price'].get_frame(), text="📈 Цены и сигналы")
+        self.notebook.add(self.tabs['capital'].get_frame(), text="💰 Капитал")
+        self.notebook.add(self.tabs['position'].get_frame(), text="⚖️ Позиции")  # ✅ ДОБАВИЛ self.notebook.add
+        self.notebook.add(self.tabs['returns'].get_frame(), text="📊 Доходности")
+        self.notebook.add(self.tabs['correlation'].get_frame(), text="🔗 Корреляции")
+        self.notebook.add(self.tabs['trades'].get_frame(), text="📋 Сделки")
+        self.notebook.add(self.tabs['stats'].get_frame(), text="📈 Статистика")
+        self.notebook.add(self.tabs['compare'].get_frame(), text="⚖️ Сравнение")
+        self.notebook.add(self.tabs['risk'].get_frame(), text="🛡️ Риски")
+        self.notebook.add(self.tabs['risk_analysis'].get_frame(), text="🎯 Анализ рисков")
+
+
     def on_strategy_changed(self, event=None):
-        """Обработчик смены стратегии"""
-        if self.strategy_type.get() == 'supertrend':
-            self.supertrend_frame.grid()
-        else:
-            self.supertrend_frame.grid_remove()
+            """Обработчик смены стратегии"""
+            if self.strategy_type.get() == 'supertrend':
+                self.supertrend_frame.grid()
+            else:
+                self.supertrend_frame.grid_remove()
                     
     def browse_file(self):
         """Выбор файла с данными"""
@@ -349,6 +347,7 @@ class TradingSystemGUI:
         if filename:
             self.data_file.set(filename)
             
+    
     @with_error_handling
     def run_test(self):
         """Запуск тестирования с поддержкой данных из API"""
@@ -384,6 +383,8 @@ class TradingSystemGUI:
                 # Иначе загружаем из файла
                 data = load_price_data_from_file(self.data_file.get())
                 data_source = f"файла {self.data_file.get()}"
+            
+            # ... остальной код метода без изменений ...
             
             # Расширенная валидация данных
             from utils.data_loader import validate_price_data
@@ -422,11 +423,13 @@ class TradingSystemGUI:
             else:
                 # Альтернативная очистка если метод еще не добавлен
                 self.system.trade_history = []
+                if hasattr(self.system, '_cache_stats'):
+                    self.system._cache_stats = {k: 0 for k in self.system._cache_stats}
             
             # === 4. СОБИРАЕМ ПАРАМЕТРЫ ТЕСТА ===
             test_params = self._collect_test_parameters()
             
-            # === 5. ЗАПУСК СИМУЛЯЦИИ ===
+            # === 5. ЗАПУСК ОПТИМИЗИРОВАННОЙ СИМУЛЯЦИИ ===
             
             # Замер времени выполнения
             import time
@@ -463,6 +466,9 @@ class TradingSystemGUI:
             
             # === 10. ФИНАЛЬНЫЙ ОТЧЕТ ===
             self._show_success_report(result, performance, execution_time, data_source)
+            
+            # === 11. СБОР СТАТИСТИКИ ===
+            self._log_performance_stats(execution_time, validation['stats'])
             
         except FileNotFoundError:
             messagebox.showerror("Ошибка", f"❌ Файл не найден: {self.data_file.get()}")
@@ -538,6 +544,45 @@ class TradingSystemGUI:
         
         return True
 
+    def _show_success_report(self, result: pd.DataFrame, performance: dict, execution_time: float):
+        """Показать отчет об успешном завершении тестирования"""
+        final_capital = result['capital'].iloc[-1]
+        total_return = (final_capital - self.system.initial_capital) / self.system.initial_capital * 100
+        trades_count = len(self.system.trade_history)
+        
+        # Статистика кэша
+        cache_stats = self.system.get_cache_stats()
+        cache_efficiency = cache_stats['overall_hit_ratio']
+        
+        # 🆕 ИНФОРМАЦИЯ О РИСК-МЕНЕДЖМЕНТЕ
+        risk_status = "активна" if self.risk_management_enabled.get() else "отключена"
+        risk_trades_info = ""
+        if self.risk_management_enabled.get() and 'risk_system_enabled' in performance:
+            risk_trades = performance.get('total_trades_with_risk', 0)
+            risk_trades_info = f"\n• Сделок с рисками: {risk_trades}"
+        
+        # Сообщение об успехе
+        success_msg = (
+            f"✅ Тестирование завершено успешно!\n\n"
+            f"📈 Основные результаты:\n"
+            f"• Сделок: {trades_count}\n"
+            f"• Финальный капитал: ${final_capital:,.2f}\n"
+            f"• Доходность: {total_return:+.2f}%\n"
+            f"• Макс. просадка: {performance.get('max_drawdown', 0):.2f}%\n"
+            f"• Риск-менеджмент: {risk_status}{risk_trades_info}\n\n"
+            f"⚡ Производительность:\n"
+            f"• Время выполнения: {execution_time:.2f} сек\n"
+            f"• Эффективность кэша: {cache_efficiency:.1%}\n"
+            f"• Обработано записей: {len(result)}\n\n"
+            f"💡 Результат сохранен как: {self._generate_result_name()}"
+        )
+        
+        messagebox.showinfo("Успех", success_msg)
+
+    def _log_performance_stats(self, execution_time: float, data_stats: dict):
+        """Логирование статистики производительности"""
+        pass
+
     def _generate_result_name(self, data_source: str = "") -> str:
         """Генерация имени для результата теста с указанием источника данных"""
         from datetime import datetime
@@ -571,8 +616,8 @@ class TradingSystemGUI:
         trades_count = len(self.system.trade_history)
         
         # Статистика кэша
-        cache_stats = self.system.get_cache_stats() if hasattr(self.system, 'get_cache_stats') else {'overall_hit_ratio': 0}
-        cache_efficiency = cache_stats.get('overall_hit_ratio', 0)
+        cache_stats = self.system.get_cache_stats()
+        cache_efficiency = cache_stats['overall_hit_ratio']
         
         # 🆕 ИНФОРМАЦИЯ О РИСК-МЕНЕДЖМЕНТЕ
         risk_status = "активна" if self.risk_management_enabled.get() else "отключена"
@@ -609,7 +654,24 @@ class TradingSystemGUI:
     def on_result_selected(self, event=None):
         """Обработчик выбора результата"""
         self.update_all_tabs()
-                
+        
+    def update_all_tabs(self):
+        """Обновление всех вкладок - ОБНОВЛЕННАЯ ВЕРСИЯ С РИСКАМИ"""
+        if not self.selected_result.get():
+            return
+            
+        current_result = self.selected_result.get()
+        
+        # Обновление графических вкладок
+        self.tabs['price'].update_plot(current_result)
+        self.tabs['capital'].update_plot(current_result)
+        self.tabs['position'].update_plot(current_result)
+        self.tabs['returns'].update_plot(current_result)
+        self.tabs['correlation'].update_plot(current_result)
+        self.tabs['trades'].update_trades(current_result)
+        self.tabs['stats'].update_stats(current_result)
+        self.tabs['risk'].update_plot(current_result)  # 🆕 ОБНОВЛЯЕМ ВКЛАДКУ РИСКОВ
+            
     def export_results(self):
         """Экспорт результатов"""
         if not self.selected_result.get():
@@ -672,7 +734,7 @@ class TradingSystemGUI:
 
         ИНСТРУКЦИЯ ПО ИСПОЛЬЗОВАНИЮ:
 
-        1. Загрузите данные в формата CSV
+        1. Загрузите данные в формате CSV
         2. Выберите стратегию и настройте параметры
         3. Запустите тестирование
         4. Анализируйте результаты на графиках
@@ -693,13 +755,98 @@ class TradingSystemGUI:
         help_window.geometry("600x700")
         help_window.configure(bg='white')
         
-        text_widget = scrolledtext.ScrolledText(help_window, wrap=tk.WORD, 
+        text_widget = tk.scrolledtext.ScrolledText(help_window, wrap=tk.WORD, 
                                               font=('Arial', 10),
                                               padx=10, pady=10)
         text_widget.pack(fill=tk.BOTH, expand=True)
         text_widget.insert(tk.END, help_text)
         text_widget.config(state=tk.DISABLED)
 
+    @with_error_handling
+    def clear_caches(self):
+        """Очистка всех кэшей для перезапуска"""
+        cache_attrs = ['_atr_cache', '_kelly_cache', '_position_size_cache', '_risk_management_cache']
+        
+        for attr in cache_attrs:
+            if hasattr(self, attr):
+                try:
+                    # Для словарей используем clear(), для других типов - переинициализация
+                    cache_obj = getattr(self, attr)
+                    if isinstance(cache_obj, dict):
+                        cache_obj.clear()
+                    else:
+                        setattr(self, attr, {})  # Пересоздаем пустой словарь
+                except Exception as e:
+                    pass
+        
+        # Также сбрасываем статистику
+        self._cache_stats = {
+            'atr_hits': 0, 'atr_misses': 0,
+            'kelly_hits': 0, 'kelly_misses': 0, 
+            'position_hits': 0, 'position_misses': 0,
+            'risk_hits': 0, 'risk_misses': 0
+        }
+        
+        # 🆕 Очистка ордеров рисков
+        self.active_orders = {
+            'stop_loss': {},
+            'take_profit': {},
+            'trailing_stop': {},
+            'break_even': {},
+            'time_stop': {}
+        }
+
+    @with_error_handling
+    def get_performance_report(self) -> dict:
+        """Отчет о производительности"""
+        cache_stats = self.get_cache_stats()
+        
+        return {
+            'calculation_time': self.performance_stats.get('calculation_time', 0),
+            'cache_efficiency': cache_stats.get('overall_hit_ratio', 0),
+            'vectorized_operations': self.performance_stats.get('vectorized_operations', 0),
+            'total_trades': len(self.trade_history),
+            'data_points_processed': getattr(self, '_data_points_processed', 0)
+        }
+
+    @with_error_handling
+    def get_cache_stats(self) -> dict:
+        """Получить статистику кэширования для мониторинга производительности"""
+        total_hits = (self._cache_stats['atr_hits'] + self._cache_stats['kelly_hits'] + 
+                     self._cache_stats['position_hits'] + self._cache_stats['risk_hits'])
+        total_misses = (self._cache_stats['atr_misses'] + self._cache_stats['kelly_misses'] + 
+                       self._cache_stats['position_misses'] + self._cache_stats['risk_misses'])
+        
+        hit_ratio = total_hits / (total_hits + total_misses) if (total_hits + total_misses) > 0 else 0
+        
+        stats = {
+            'cache_sizes': {
+                'atr_cache': len(self._atr_cache),
+                'kelly_cache': len(self._kelly_cache),
+                'position_cache': len(self._position_size_cache),
+                'risk_cache': len(self._risk_management_cache)
+            },
+            'hit_ratios': {
+                'atr': self._cache_stats['atr_hits'] / (self._cache_stats['atr_hits'] + self._cache_stats['atr_misses']) if (self._cache_stats['atr_hits'] + self._cache_stats['atr_misses']) > 0 else 0,
+                'kelly': self._cache_stats['kelly_hits'] / (self._cache_stats['kelly_hits'] + self._cache_stats['kelly_misses']) if (self._cache_stats['kelly_hits'] + self._cache_stats['kelly_misses']) > 0 else 0,
+                'position': self._cache_stats['position_hits'] / (self._cache_stats['position_hits'] + self._cache_stats['position_misses']) if (self._cache_stats['position_hits'] + self._cache_stats['position_misses']) > 0 else 0,
+                'risk': self._cache_stats['risk_hits'] / (self._cache_stats['risk_hits'] + self._cache_stats['risk_misses']) if (self._cache_stats['risk_hits'] + self._cache_stats['risk_misses']) > 0 else 0
+            },
+            'total_hits': total_hits,
+            'total_misses': total_misses,
+            'overall_hit_ratio': hit_ratio
+        }
+        
+        return stats
+
+    @with_error_handling
+    def get_trade_history(self) -> pd.DataFrame:
+        """Возвращает историю сделок в виде DataFrame"""
+        if not self.trade_history:
+            return pd.DataFrame()
+        
+        return pd.DataFrame(self.trade_history)
+    
     @with_error_handling
     def apply_risk_parameters(self):
         """Применение параметров управления рисками к системе"""
@@ -716,12 +863,99 @@ class TradingSystemGUI:
                     'risk_management_enabled': True
                 }
                 
-                if hasattr(self.system, 'update_risk_parameters'):
-                    self.system.update_risk_parameters(**risk_params)
+                self.system.update_risk_parameters(**risk_params)
             else:
                 # Отключаем риск-менеджмент
-                if hasattr(self.system, 'update_risk_parameters'):
-                    self.system.update_risk_parameters(risk_management_enabled=False)
+                self.system.update_risk_parameters(risk_management_enabled=False)
                 
         except Exception as e:
-            print(f"Ошибка применения параметров риска: {e}")
+            pass
+# Добавить в класс TradingSystemGUI:
+
+@with_error_handling
+def run_test_optimized(self):
+    """Оптимизированная версия запуска тестирования"""
+    
+    # Быстрая предварительная валидация
+    if not self._quick_validate_inputs():
+        return
+    
+    try:
+        # Оптимизированная загрузка данных
+        data = self._load_and_validate_data_optimized()
+        if data is None:
+            return
+        
+        # Быстрая подготовка системы
+        self._prepare_system_fast()
+        
+        # Оптимизированный сбор параметров
+        test_params = self._collect_test_parameters_optimized()
+        
+        # Запуск симуляции с таймингом
+        import time
+        start_time = time.perf_counter()
+        
+        result = self.system.simulate_trading_optimized(data, **test_params)
+        
+        execution_time = time.perf_counter() - start_time
+        
+        # Быстрая валидация результатов
+        if not self._validate_results_fast(result):
+            return
+        
+        # Оптимизированный анализ и сохранение
+        self._process_and_display_results_optimized(result, execution_time)
+        
+    except Exception as e:
+        self._handle_optimized_error(e)
+
+    def _quick_validate_inputs(self) -> bool:
+        """Быстрая валидация входных данных"""
+        checks = [
+            (bool(self.data_file.get()), "Выберите файл с данными"),
+            (self.initial_capital.get() > 0, "Начальный капитал должен быть положительным"),
+            (0 < self.initial_f.get() <= 0.5, "Параметр Келли должен быть в диапазоне (0, 0.5]"),
+            (0.001 <= self.risk_per_trade.get() <= 0.1, "Риск на сделку должен быть в диапазоне [0.1%, 10%]")
+        ]
+        
+        errors = [msg for check, msg in checks if not check]
+        if errors:
+            messagebox.showerror("Ошибка параметров", "\n".join(f"• {error}" for error in errors))
+            return False
+        return True
+
+    def _load_and_validate_data_optimized(self) -> Optional[pd.DataFrame]:
+        """Оптимизированная загрузка и валидация данных"""
+        try:
+            data = load_price_data_from_file(self.data_file.get())
+            
+            # Быстрая проверка минимальных требований
+            if len(data) < 10:
+                messagebox.showerror("Ошибка", "Недостаточно данных для тестирования")
+                return None
+                
+            if 'close' not in data.columns:
+                messagebox.showerror("Ошибка", "Отсутствует колонка 'close' в данных")
+                return None
+                
+            return data
+            
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Ошибка загрузки данных: {str(e)}")
+            return None
+
+    def _collect_test_parameters_optimized(self) -> dict:
+        """Оптимизированный сбор параметров тестирования"""
+        # Предварительно вычисленные значения
+        return {
+            'initial_f': self.initial_f.get(),
+            'risk_per_trade': self.risk_per_trade.get(),
+            'use_multi_timeframe': self.use_multi_timeframe.get(),
+            'use_dynamic_risk': self.use_dynamic_risk.get(),
+            'realistic_mode': self.use_realistic.get(),
+            'strategy_type': self.strategy_type.get(),
+            'supertrend_atr_period': self.supertrend_atr_period.get(),
+            'supertrend_multiplier': self.supertrend_multiplier.get(),
+            'risk_management_enabled': self.risk_management_enabled.get()
+        }
