@@ -24,14 +24,8 @@ from gui.tabs import (
 
 from gui.components import FileBrowser, ResultsComboBox, StyledButton
 
-try:
-    from gui.tabs.instruments_tab import InstrumentsTab
-    INSTRUMENTS_AVAILABLE = True
-except ImportError as e:
-    print(f"ℹ️ Модуль InstrumentsTab не доступен: {e}")
-    INSTRUMENTS_AVAILABLE = False
-
-
+# 🔧 ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННОЙ ДО БЛОКА TRY
+TBANK_AVAILABLE = False
 
 # 🔧 ПЫТАЕМСЯ ИМПОРТИРОВАТЬ МОДУЛЬ Т-БАНКА
 try:
@@ -118,17 +112,6 @@ class TradingSystemGUI:
         self.notebook.add(self.tabs['compare'].get_frame(), text="Сравнение")
         self.notebook.add(self.tabs['risk'].get_frame(), text="Риски")
         self.notebook.add(self.tabs['risk_analysis'].get_frame(), text="Анализ рисков")
-        
-        # ✅ ДОБАВЛЯЕМ ВКЛАДКУ ИНСТРУМЕНТОВ
-        if INSTRUMENTS_AVAILABLE:
-            try:
-                # Используем токен из Tinkoff API
-                TOKEN = "t.8HbNCn4L0U9uBmMa5oloBrXCKxnqsTYNVK3f9iJOwDBiQ2lva9kvQ3C-MLgEESHl65ma1q0k0P6aMfS_O_co4g"
-                self.instruments_tab = InstrumentsTab(self.notebook, TOKEN)
-                self.notebook.add(self.instruments_tab, text="📊 Инструменты")
-                print("✅ Вкладка инструментов успешно добавлена")
-            except Exception as e:
-                print(f"❌ Ошибка добавления вкладки инструментов: {e}")
 
     def setup_gui(self):
         """Настройка графического интерфейса"""
