@@ -1,0 +1,30 @@
+version = 1
+
+# Основные анализаторы для Python
+[[analyzers]]
+name = "python"           # Стандартный анализ кода
+enabled = true
+
+[[analyzers]]
+name = "security"         # Анализ безопасности
+enabled = true
+
+[[analyzers]]
+name = "bandit"           # Специфичный для Python security
+enabled = true
+
+# Игнорировать временные файлы
+exclude_patterns = [
+  "**/__pycache__/**",
+  "**/.venv/**",
+  "**/venv/**",
+  "**/env/**",
+  "**/migrations/**",
+  "**/test_*.py",
+  "**/*_test.py"
+]
+
+# Базовые настройки
+[deepsource]
+lang = "python"
+description = "Мой Python проект"
