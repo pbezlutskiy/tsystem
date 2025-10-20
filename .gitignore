@@ -24,3 +24,12 @@ cache/
 config.py
 secrets/
 *.key
+echo "trading_db/" >> .gitignore
+echo "results.csv" >> .gitignore  
+echo "results.sarif" >> .gitignore
+echo "*.sarif" >> .gitignore
+Add-Content .gitignore "`ntrading_db/"
+Add-Content .gitignore "results.sarif"
+Add-Content .gitignore "results.csv"
+Add-Content .gitignore "**/__pycache__/"
+Add-Content .gitignore "*.pyc"

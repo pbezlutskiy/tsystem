@@ -6,12 +6,12 @@ print(f"Текущая директория: {os.getcwd()}")
 print(f"Python path: {sys.path}")
 
 try:
-    from tbank_api.instrument_service_working import InstrumentServiceWorking
+    from tbank_api.instrument_service_working import InstrumentService
     print("✅ instrument_service_working импортирован успешно!")
     
     # Тест функциональности
     TOKEN = "t.8HbNCn4L0U9uBmMa5oloBrXCKxnqsTYNVK3f9iJOwDBiQ2lva9kvQ3C-MLgEESHl65ma1q0k0P6aMfS_O_co4g"
-    service = InstrumentServiceWorking(TOKEN)
+    service = InstrumentService(TOKEN)
     print("✅ Сервис создан успешно!")
     
     # Тест поиска

@@ -8,10 +8,10 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 try:
-    from tbank_api.instrument_service_working import InstrumentServiceWorking
+    from tbank_api.instrument_service import InstrumentService
     IMPORT_SUCCESS = True
 except ImportError as e:
-    print(f"❌ Ошибка импорта InstrumentServiceWorking: {e}")
+    print(f"❌ Ошибка импорта InstrumentService: {e}")
     IMPORT_SUCCESS = False
 
 
@@ -26,7 +26,7 @@ class InstrumentsTabWorking(ttk.Frame):
             self.show_import_error()
             return
             
-        self.service = InstrumentServiceWorking(token)
+        self.service = InstrumentService(token)
         self.create_widgets()
         self.load_popular_shares()
     
@@ -47,10 +47,11 @@ class InstrumentsTabWorking(ttk.Frame):
     def retry_import(self):
         """Попытка переимпортировать модули"""
         try:
-            global IMPORT_SUCCESS
-            from tbank_api.instrument_service_working import InstrumentServiceWorking
-            IMPORT_SUCCESS = True
-            self.service = InstrumentServiceWorking(self.token)
+            # Импортируем правильный класс
+            from tbank_api.instrument_service import InstrumentService
+            
+            # Создаем сервис
+            self.service = InstrumentService(self.token)
             
             # Очищаем и пересоздаем интерфейс
             for widget in self.winfo_children():
@@ -59,8 +60,14 @@ class InstrumentsTabWorking(ttk.Frame):
             self.create_widgets()
             self.load_popular_shares()
             
+            print("✅ Модуль успешно перезагружен")
+            
         except ImportError as e:
+            print(f"❌ Ошибка импорта: {e}")
             messagebox.showerror("Ошибка", f"Не удалось перезагрузить модуль: {e}")
+        except Exception as e:
+            print(f"❌ Другая ошибка: {e}")
+            messagebox.showerror("Ошибка", f"Ошибка при перезагрузке: {e}")
     
     def create_widgets(self):
         """Создание интерфейса"""
@@ -134,7 +141,7 @@ class InstrumentsTabWorking(ttk.Frame):
     
     def create_search_table(self):
         """Создание таблицы для результатов поиска"""
-        columns = ('Тикер', 'Название', 'Тип', 'Валюта', 'Лот')
+        columns = ('Тикер', 'Название', 'Тип', 'Валюта', 'Лот', 'Биржа', 'FIGI')
         self.search_tree = ttk.Treeview(self.search_frame, columns=columns, show='headings', height=15)
         
         for col in columns:
@@ -177,7 +184,12 @@ class InstrumentsTabWorking(ttk.Frame):
         try:
             self.shares_tree.delete(*self.shares_tree.get_children())
             
-            shares_df = self.service.get_popular_russian_shares_working()
+            # Правильный вызов метода
+            shares_df = self.service.get_popular_russian_shares()
+            
+            if shares_df.empty:
+                messagebox.showwarning("Предупреждение", "Не удалось загрузить акции")
+                return
             
             for _, row in shares_df.iterrows():
                 self.shares_tree.insert('', tk.END, values=(
@@ -195,30 +207,37 @@ class InstrumentsTabWorking(ttk.Frame):
     
     def search_instruments(self):
         """Поиск инструментов"""
-        query = self.search_entry.get().strip()
-        if not query:
-            messagebox.showwarning("Внимание", "Введите поисковый запрос")
-            return
-        
         try:
+            query = self.search_entry.get().strip()
+            if not query:
+                messagebox.showwarning("Предупреждение", "Введите запрос для поиска")
+                return
+            
             self.search_tree.delete(*self.search_tree.get_children())
             
-            results_df = self.service.search_instruments_working(query)
+            # Правильный вызов метода
+            search_results = self.service.search_instruments_dataframe(query)
             
-            for _, row in results_df.iterrows():
+            if search_results.empty:
+                messagebox.showinfo("Информация", "Инструменты не найдены")
+                return
+            
+            for _, row in search_results.iterrows():
                 self.search_tree.insert('', tk.END, values=(
                     row['Ticker'],
                     row['Name'],
                     row['Type'],
                     row.get('Currency', ''),
-                    row.get('Lot', 1)
+                    row.get('Lot', 1),
+                    row.get('Exchange', ''),
+                    row.get('FIGI', '')
                 ))
             
-            messagebox.showinfo("Результаты", f"Найдено: {len(results_df)}")
+            messagebox.showinfo("Успех", f"Найдено {len(search_results)} инструментов")
             
         except Exception as e:
             messagebox.showerror("Ошибка", f"Ошибка поиска: {e}")
-    
+
     def show_instrument_details_from_shares(self, event):
         """Показать детали инструмента из таблицы акций"""
         selection = self.shares_tree.selection()
@@ -242,7 +261,8 @@ class InstrumentsTabWorking(ttk.Frame):
         ticker = values[0]
         
         try:
-            results_df = self.service.search_instruments_working(ticker)
+            # Используем правильный метод поиска
+            results_df = self.service.search_instruments_dataframe(ticker)
             if not results_df.empty:
                 figi = results_df.iloc[0]['FIGI']
                 self.show_instrument_details_by_figi(figi)
@@ -252,10 +272,10 @@ class InstrumentsTabWorking(ttk.Frame):
     def show_instrument_details_by_figi(self, figi):
         """Показать детали инструмента по FIGI"""
         try:
-            instrument = self.service.get_instrument_by_figi_working(figi)
-            if instrument and hasattr(instrument, 'instrument'):
-                details = instrument.instrument
-                self.display_instrument_details(details)
+            # Используем правильный метод
+            instrument = self.service.get_instrument_by_figi(figi)
+            if instrument:
+                self.display_instrument_details(instrument)
             else:
                 messagebox.showwarning("Внимание", "Не удалось получить детали")
                 
@@ -269,19 +289,25 @@ class InstrumentsTabWorking(ttk.Frame):
         
         info = f"""📊 ДЕТАЛЬНАЯ ИНФОРМАЦИЯ:
 
-📛 Название: {instrument.name}
-🏷️ Тикер: {instrument.ticker}
-🔢 FIGI: {instrument.figi}
-💰 Валюта: {instrument.currency}
-📦 Лот: {instrument.lot}
-🎯 Минимальный шаг цены: {instrument.min_price_increment.units}.{instrument.min_price_increment.nano:09d}
-🏛️ Биржа: {instrument.exchange}
+                📛 Название: {instrument.name}
+                🏷️ Тикер: {instrument.ticker}
+                🔢 FIGI: {instrument.figi}
+                💰 Валюта: {instrument.currency}
+                📦 Лот: {instrument.lot}
+                🏛️ Биржа: {instrument.exchange}
+                📊 Класс-код: {instrument.class_code}
 
-⚙️ Доступность:
-• Торговля через API: {'✅ ДА' if instrument.api_trade_available_flag else '❌ НЕТ'}
-• Покупка: {'✅ ДА' if instrument.buy_available_flag else '❌ НЕТ'}
-• Продажа: {'✅ ДА' if instrument.sell_available_flag else '❌ НЕТ'}
-"""
+                ⚙️ Доступность:
+                • Торговля через API: {'✅ ДА' if instrument.api_trade_available_flag else '❌ НЕТ'}
+                • Покупка: {'✅ ДА' if instrument.buy_available_flag else '❌ НЕТ'}
+                • Продажа: {'✅ ДА' if instrument.sell_available_flag else '❌ НЕТ'}
+                """
+        
+        # Добавляем информацию о минимальном шаге цены если доступно
+        if hasattr(instrument, 'min_price_increment'):
+            min_price = instrument.min_price_increment
+            if hasattr(min_price, 'units') and hasattr(min_price, 'nano'):
+                info += f"🎯 Минимальный шаг цены: {min_price.units}.{min_price.nano:09d}\n"
         
         self.details_text.insert(tk.END, info)
         self.details_text.config(state=tk.DISABLED)
@@ -298,18 +324,24 @@ class InstrumentsTabWorking(ttk.Frame):
     def test_connection(self):
         """Проверка подключения к API"""
         try:
-            schedules = self.service.get_trading_schedules_working()
-            if schedules:
-                messagebox.showinfo("Подключение", f"✅ API работает!\n{len(schedules.exchanges)} бирж")
+            # Простая проверка - пытаемся получить популярные акции
+            shares_df = self.service.get_popular_russian_shares()
+            
+            if not shares_df.empty:
+                messagebox.showinfo("Подключение", 
+                                f"✅ API работает!\nЗагружено {len(shares_df)} акций")
             else:
-                messagebox.showwarning("Подключение", "⚠️ API отвечает")
+                messagebox.showwarning("Подключение", 
+                                    "⚠️ API отвечает, но не удалось загрузить данные")
+                
         except Exception as e:
-            messagebox.showerror("Ошибка", f"❌ Ошибка: {e}")
-    
+            messagebox.showerror("Ошибка", f"❌ Ошибка подключения: {e}")
+                
     def export_to_csv(self):
         """Экспорт данных в CSV"""
         try:
-            shares_df = self.service.get_popular_russian_shares_working()
+            # Используем правильный метод
+            shares_df = self.service.get_popular_russian_shares()
             shares_df.to_csv('instruments_export.csv', index=False, encoding='utf-8')
             messagebox.showinfo("Успех", f"Экспортировано {len(shares_df)} инструментов")
         except Exception as e:
