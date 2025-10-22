@@ -353,7 +353,8 @@ if __name__ == "__main__":
     root.title("Инструменты")
     root.geometry("900x600")
     
-    TOKEN = "t.8HbNCn4L0U9uBmMa5oloBrXCKxnqsTYNVK3f9iJOwDBiQ2lva9kvQ3C-MLgEESHl65ma1q0k0P6aMfS_O_co4g"
+    from config import Config
+    TOKEN = Config.TINKOFF_TOKEN
     
     tab = InstrumentsTabWorking(root, TOKEN)
     tab.pack(fill=tk.BOTH, expand=True)

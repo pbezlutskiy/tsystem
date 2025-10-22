@@ -266,29 +266,6 @@ class InstrumentsTab(ttk.Frame):
         except Exception as e:
             messagebox.showerror("Ошибка", f"Не удалось получить детали: {e}")
     
-    def show_instrument_details(self, event):
-        """Показать детали инструмента"""
-        tree = event.widget
-        selection = tree.selection()
-        if not selection:
-            return
-        
-        item = selection[0]
-        values = tree.item(item, 'values')
-        ticker = values[0]
-        
-        try:
-            # Используем улучшенный метод поиска
-            instrument = self.service.get_instrument_by_ticker(ticker)
-            if instrument and hasattr(instrument, 'instrument'):
-                details = instrument.instrument
-                self.show_details_window(details)
-            else:
-                messagebox.showwarning("Внимание", 
-                                    f"Не удалось найти детальную информацию для {ticker}\n"
-                                    f"Инструмент может быть недоступен через API")
-        except Exception as e:
-            messagebox.showerror("Ошибка", f"Не удалось получить детали: {e}")
                         
     def export_to_csv(self):
         """Экспорт данных в CSV"""
@@ -307,7 +284,8 @@ if __name__ == "__main__":
     root.title("Тест вкладки инструментов")
     root.geometry("800x600")
     
-    TOKEN = "t.8HbNCn4L0U9uBmMa5oloBrXCKxnqsTYNVK3f9iJOwDBiQ2lva9kvQ3C-MLgEESHl65ma1q0k0P6aMfS_O_co4g"
+    from config import Config
+    TOKEN = Config.TINKOFF_TOKEN
     
     tab = InstrumentsTab(root, TOKEN)
     tab.pack(fill=tk.BOTH, expand=True)

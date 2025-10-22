@@ -40,13 +40,21 @@ def scan_project_structure(start_path=".", output_file="project_structure.txt"):
             
             # Файлы в текущей директории
             sub_indent = '    ' * (level + 1)
-            for file in sorted(files):
-                # Пропускаем служебные файлы
-                if file in {'.DS_Store', 'Thumbs.db', 'desktop.ini'} or file.startswith('.'):
-                    continue
-                
-                f.write(f"{sub_indent}{file}\n")
-                total_files += 1
+            
+            # Если это папка trading_db или ее подпапки, не показываем файлы
+            if 'trading_db' not in root.split(os.sep):
+                # Обычная обработка файлов для всех папок кроме trading_db
+                for file in sorted(files):
+                    # Пропускаем служебные файлы
+                    if file in {'.DS_Store', 'Thumbs.db', 'desktop.ini'} or file.startswith('.'):
+                        continue
+                    
+                    f.write(f"{sub_indent}{file}\n")
+                    total_files += 1
+            else:
+                # Для папки trading_db и ее подпапок показываем только структуру папок
+                # Файлы не показываем, но папки будут обработаны в следующих итерациях os.walk
+                pass
     
     print(f"Структура сохранена в: {output_file}")
     print(f"Найдено: {total_dirs} папок, {total_files} файлов")

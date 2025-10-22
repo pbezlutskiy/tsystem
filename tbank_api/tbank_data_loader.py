@@ -7,7 +7,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 import logging
-from .tbank_config import TBankConfig
+from config import Config  # ✅ Правильный импорт
 
 # ✅ ПЕРЕКЛЮЧАЕМСЯ НА БЕЗОПАСНУЮ ОПТИМИЗИРОВАННУЮ ВЕРСИЮ
 from .optimized_data_manager import OptimizedTBankDataManager as TBankDataManager
@@ -18,12 +18,12 @@ class TBankDataLoader:
     """Загрузчик данных с безопасными оптимизациями"""
     
     def __init__(self, api_key: str = None):
-        self.config = TBankConfig()
-        
+        # Убираем self.config, используем Config напрямую
         if api_key:
             self.api_key = api_key
         else:
-            self.api_key = self.config.get_api_key()
+            # Получаем токен из Config
+            self.api_key = Config.TINKOFF_TOKEN
         
         # Используем безопасный оптимизированный менеджер
         self.data_manager = TBankDataManager(self.api_key)
@@ -70,7 +70,6 @@ class TBankDataLoader:
         """Получить детальную аналитику"""
         return self.data_manager.get_detailed_analytics()
     
-    # ... остальные методы без изменений ...
     def update_recent_data(self, symbol: str, days_back: int = 1) -> pd.DataFrame:
         """Инкрементальное обновление данных"""
         return self.data_manager.update_data_incrementally(symbol, days_back)
@@ -121,8 +120,6 @@ class TBankDataLoader:
         
         return result
     
-    # В класс TBankDataLoader добавьте:
-
     def get_advanced_analytics(self) -> Dict[str, Any]:
         """Получить расширенную аналитику"""
         try:

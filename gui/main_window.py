@@ -127,8 +127,8 @@ class TradingSystemGUI:
         # ✅ ДОБАВЛЯЕМ ВКЛАДКУ ИНСТРУМЕНТОВ
         if INSTRUMENTS_AVAILABLE:
             try:
-                # Используем токен из Tinkoff API
-                TOKEN = "t.8HbNCn4L0U9uBmMa5oloBrXCKxnqsTYNVK3f9iJOwDBiQ2lva9kvQ3C-MLgEESHl65ma1q0k0P6aMfS_O_co4g"
+                from config import Config
+                TOKEN = Config.TINKOFF_TOKEN
                 self.instruments_tab = InstrumentsTab(self.notebook, TOKEN)
                 self.notebook.add(self.instruments_tab, text="📊 Инструменты")
                 print("✅ Вкладка инструментов успешно добавлена")

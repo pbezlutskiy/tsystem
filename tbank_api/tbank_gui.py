@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 
 # Импорты для работы с кэшированием
 from .tbank_data_loader import TBankDataLoader
-from .tbank_config import TBankConfig
+from config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -398,11 +398,13 @@ class TBankApiTab:
     def load_saved_token(self):
         """Загрузка сохраненного токена"""
         try:
-            config = TBankConfig()
-            saved_token = config.get_api_key()
-            if saved_token:
+            # Используем токен из основного config.py
+            saved_token = Config.TINKOFF_TOKEN
+            if saved_token and saved_token.strip():
                 self.token_var.set(saved_token)
-                self.log_info(f"✅ Загружен сохраненный токен API")
+                self.log_info(f"✅ Загружен токен API из config.py")
+            else:
+                self.log_info(f"⚠️ Токен не найден в config.py")
         except Exception as e:
             self.log_error(f"Ошибка загрузки токена: {e}")
     
@@ -414,12 +416,14 @@ class TBankApiTab:
             return
         
         try:
-            config = TBankConfig()
-            config.set_api_key(token)
-            messagebox.showinfo("Успех", "Токен успешно сохранен в конфигурации")
+            from config import Config
+            Config.set_tinkoff_token(token)
+            messagebox.showinfo("Успех", "✅ Токен успешно сохранен!")
             self.log_info("✅ Токен API сохранен")
+            
         except Exception as e:
             messagebox.showerror("Ошибка", f"Ошибка сохранения токена: {str(e)}")
+            
     
     def test_connection(self):
         """Проверка подключения к API"""

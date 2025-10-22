@@ -3,25 +3,19 @@
     add_missing_methods.py
     bandit_report.json
     config.py
-    find_imports.py
-    find_realexchange.py
     instrument_service_fixed.py
     main.py
     project_structure.txt
+    requirements copy.txt
     requirements.txt
+    results.sarif
     scan_project_structure.py
-    test_ai_features.py
-    test_analytics.py
-    test_complete_system.py
-    test_fix.py
-    test_import.py
-    test_instruments.py
-    test_instruments_simple.py
-    test_psutil_fix.py
     update_api_manager.py
     backup/
         main.py
         main_window.py
+    config/
+        security.py
     core/
         __init__.py
         trading_system.py
@@ -95,6 +89,99 @@
                 candles_TCS00A0ZZAC4_1h_20241019_20251019.json
                 candles_TCS00A0ZZAC4_1h_20251012_20251019.json
                 instruments_all.json
+    trading_db/
+        db-python/
+            default/
+                cache/
+                    cached-strings/
+                        pools/
+                            0/
+                                buckets/
+                                ids2/
+                                indices2/
+                                metadata/
+                                pageDump/
+                        tuple-pool/
+                    pages/
+                    predicates/
+                    relations/
+                pools/
+                    0/
+                        buckets/
+                        metadata/
+                        pageDump/
+                    1/
+                        buckets/
+                        ids1/
+                        indices1/
+                        metadata/
+                        pageDump/
+                strings/
+        diagnostic/
+            extractors/
+                python/
+                yaml/
+            tracer/
+        log/
+        results/
+            codeql/
+                python-queries/
+                    analysis/
+                    Classes/
+                        CallsToInitDel/
+                        Comparisons/
+                        InitCallsSubclass/
+                        SubclassShadowing/
+                    Diagnostics/
+                    Exceptions/
+                    Expressions/
+                        Comparisons/
+                        Formatting/
+                        Regex/
+                    Filters/
+                    Functions/
+                    Imports/
+                    Lexical/
+                    Metrics/
+                    Numerics/
+                    Resources/
+                    Security/
+                        CVE-2018-1281/
+                        CWE-020/
+                        CWE-022/
+                        CWE-074/
+                        CWE-078/
+                        CWE-079/
+                        CWE-089/
+                        CWE-090/
+                        CWE-094/
+                        CWE-113/
+                        CWE-116/
+                        CWE-117/
+                        CWE-209/
+                        CWE-215/
+                        CWE-285/
+                        CWE-295/
+                        CWE-312/
+                        CWE-326/
+                        CWE-327/
+                        CWE-352/
+                        CWE-377/
+                        CWE-502/
+                        CWE-601/
+                        CWE-611/
+                        CWE-614/
+                        CWE-643/
+                        CWE-730/
+                        CWE-732/
+                        CWE-776/
+                        CWE-918/
+                        CWE-943/
+                    Statements/
+                    Summary/
+                    Testing/
+                    Variables/
+                        LoopVariableCapture/
     utils/
         __init__.py
         analytics.py

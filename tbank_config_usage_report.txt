@@ -1,0 +1,26 @@
+ОТЧЕТ ПО ИСПОЛЬЗОВАНИЮ TBANK_CONFIG
+==================================================
+
+Файл: .\find_tbank_config_usage.py
+Паттерн: TBankConfig
+------------------------------
+
+Файл: .\tbank_api\api_manager.py
+Паттерн: TBankConfig
+------------------------------
+
+Файл: .\tbank_api\check_structure.py
+Паттерн: tbank_config\.
+------------------------------
+
+Файл: .\tbank_api\tbank_config.py
+Паттерн: TBankConfig
+------------------------------
+
+Файл: .\tbank_api\tbank_data_loader.py
+Паттерн: TBankConfig
+------------------------------
+
+Файл: .\tbank_api\tbank_gui.py
+Паттерн: TBankConfig
+------------------------------

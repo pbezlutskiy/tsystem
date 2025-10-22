@@ -10,7 +10,7 @@ from typing import Dict, List, Optional
 import logging
 from .tbank_api import TBankAPI
 from .moex_api import MoexAPI
-from .tbank_config import TBankConfig
+from config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class ApiManager:
     """ИСПРАВЛЕННЫЙ менеджер для управления API"""
     
     def __init__(self):
-        self.config = TBankConfig()
+        # Убираем self.config, используем Config напрямую
         self.tbank_api = None
         self.moex_api = MoexAPI()
         self.current_api = 'moex'  # По умолчанию MOEX
@@ -32,7 +32,8 @@ class ApiManager:
     
     def _initialize_tbank_api(self):
         """Инициализация Tinkoff API с проверкой доступности"""
-        api_key = self.config.get_api_key()
+        # ИСПРАВЛЕНО: используем Config напрямую
+        api_key = Config.TINKOFF_TOKEN
         if api_key and api_key.strip():
             # Убедимся, что ключ имеет правильный формат
             if not api_key.startswith('t.'):
@@ -87,7 +88,7 @@ class ApiManager:
         
         self.current_api = api_name
         logger.info(f"✅ Активный API установлен: {api_name}")
-        return True
+        return True    
     
     def load_price_data(self, symbol: str, 
                        days_back: int = 365,
@@ -338,3 +339,4 @@ class ApiManager:
             if not self.is_tbank_available():
                 logger.warning("Tinkoff API недоступен после перезагрузки - переключаем на MOEX")
                 self.set_api('moex')
+
